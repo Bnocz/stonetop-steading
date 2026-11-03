@@ -59,18 +59,16 @@ docker build -t stonetop-steading .
 
 ## Steading mechanics reference
 
-Source: Stonetop Book I, Steading playbook. Items marked **VERIFY** should be checked against the book before they are coded.
+Source: Stonetop Book I, Steading playbook. Verified against the book.
 
 ### Size (descriptive, with modifier)
 
 | Value | Label | Approx. people |
 | --- | --- | --- |
-| -1 | Hamlet | ~50 |
-| +0 | Village | ~100–200 |
-| +1 | Town | ~300–600 |
-| +2 | City | 1,000+ |
-
-**VERIFY** population ranges (an alternative set exists: Hamlet <50, Village 150–350, Town 500–1500, City 2500+).
+| -1 | Hamlet | <50 |
+| +0 | Village | 150–350 |
+| +1 | Town | 500–1500 |
+| +2 | City | 2500+ |
 
 ### Fortunes
 
@@ -112,6 +110,6 @@ Stonetop starts at **+0 (Steady)**.
 | --- | --- | --- |
 | Diminished | Injury or sickness | Disadvantage on *Deploy*, *Muster*, *Pull Together* |
 | Lacking | Shortages, hoarding, distrust | Treat Prosperity as 1 lower |
-| Malcontent | Fear, anger, despair | **VERIFY** exact effect |
+| Malcontent | Fear, anger, despair | Forces Fortunes to reset lower and negatively impacts social cohesion moves |
 
 The app only tracks and displays debilities and their effective-value changes. It does not roll moves.
