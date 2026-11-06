@@ -7,3 +7,13 @@ body {
   margin: 0;
   padding: 2rem 1rem;
 }
+
+table {
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 0.25rem 0.75rem;
+  text-align: left;
+}

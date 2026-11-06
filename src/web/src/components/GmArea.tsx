@@ -1,13 +1,19 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { fetchMe, logout } from '../api/auth.ts'
+import ChangeLog from './ChangeLog.tsx'
 import LoginForm from './LoginForm.tsx'
+import SteadingSheet from './SteadingSheet.tsx'
 
 function GmArea() {
   const queryClient = useQueryClient()
   const me = useQuery({ queryKey: ['me'], queryFn: fetchMe })
   const signOut = useMutation({
     mutationFn: logout,
-    onSuccess: () => queryClient.setQueryData(['me'], null),
+    onSuccess: () => {
+      queryClient.setQueryData(['me'], null)
+      queryClient.removeQueries({ queryKey: ['steading'] })
+      queryClient.removeQueries({ queryKey: ['steading-log'] })
+    },
   })
 
   if (me.isPending) return null
@@ -24,6 +30,8 @@ function GmArea() {
       >
         Sign out
       </button>
+      <SteadingSheet />
+      <ChangeLog />
     </section>
   )
 }

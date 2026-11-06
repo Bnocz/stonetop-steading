@@ -1,10 +1,14 @@
 using Api.Auth;
 using Api.Data;
 using Api.Health;
+using Api.Steadings;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSteadingDatabase(builder.Configuration);
 builder.Services.AddGmAuth(builder.Environment);
+builder.Services.ConfigureHttpJsonOptions(
+    options => options.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
 var app = builder.Build();
 
@@ -16,6 +20,7 @@ app.UseGmAuth();
 
 app.MapHealthEndpoints();
 app.MapAuthEndpoints();
+app.MapGmSteadingEndpoints();
 
 // Unknown API routes are errors, not pages for the React app to handle.
 app.MapFallback("/api/{**path}", () => Results.NotFound());

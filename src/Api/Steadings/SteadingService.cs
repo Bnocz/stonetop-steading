@@ -6,6 +6,23 @@ namespace Api.Steadings;
 
 public sealed class SteadingService(SteadingDbContext db, TimeProvider timeProvider)
 {
+    private const int LogLimit = 50;
+
+    // The app tracks one steading, created by SteadingSeeder.
+    public Task<Steading?> GetCurrentAsync(CancellationToken cancellationToken = default) =>
+        db.Steadings.SingleOrDefaultAsync(cancellationToken);
+
+    public async Task<IReadOnlyList<LogEntryResponse>> GetLogAsync(
+        Guid steadingId,
+        CancellationToken cancellationToken = default) =>
+        await db.LogEntries
+            .AsNoTracking()
+            .Where(entry => entry.SteadingId == steadingId)
+            .OrderByDescending(entry => entry.ChangedAt)
+            .Take(LogLimit)
+            .Select(entry => new LogEntryResponse(entry.Stat, entry.OldValue, entry.NewValue, entry.ChangedAt))
+            .ToListAsync(cancellationToken);
+
     public async Task ChangeStatAsync(
         Guid steadingId,
         SteadingStat stat,
