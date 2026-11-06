@@ -45,6 +45,8 @@ public static class StatRules
 
     public static int Min(SteadingStat stat) => Rules[stat].Min;
 
+    public static int? Max(SteadingStat stat) => Rules[stat].Max;
+
     public static bool IsValid(SteadingStat stat, int value)
     {
         var rule = Rules[stat];
