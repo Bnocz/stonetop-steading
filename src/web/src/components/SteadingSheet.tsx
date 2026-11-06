@@ -25,27 +25,29 @@ function SteadingSheet() {
     <section>
       <h2>{name}</h2>
       {edit.isError && <p role="alert">{edit.error.message}</p>}
-      <table>
-        <thead>
-          <tr>
-            <th scope="col">Stat</th>
-            <th scope="col">Value</th>
-            <th scope="col">Effective</th>
-            <th scope="col">Label</th>
-            <th scope="col">Change</th>
-          </tr>
-        </thead>
-        <tbody>
-          {stats.map((stat) => (
-            <StatRow
-              key={stat.stat}
-              stat={stat}
-              disabled={edit.isPending}
-              onChange={(value) => edit.mutate({ stat: stat.stat, value })}
-            />
-          ))}
-        </tbody>
-      </table>
+      <div className="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Stat</th>
+              <th scope="col">Value</th>
+              <th scope="col">Effective</th>
+              <th scope="col">Label</th>
+              <th scope="col">Change</th>
+            </tr>
+          </thead>
+          <tbody>
+            {stats.map((stat) => (
+              <StatRow
+                key={stat.stat}
+                stat={stat}
+                disabled={edit.isPending}
+                onChange={(value) => edit.mutate({ stat: stat.stat, value })}
+              />
+            ))}
+          </tbody>
+        </table>
+      </div>
       <p>Debilities: {debilities.length > 0 ? debilities.join(', ') : 'none'}</p>
     </section>
   )
