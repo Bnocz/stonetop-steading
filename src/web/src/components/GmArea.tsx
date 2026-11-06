@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { fetchMe, logout } from '../api/auth.ts'
 import ChangeLog from './ChangeLog.tsx'
 import LoginForm from './LoginForm.tsx'
+import ShareLink from './ShareLink.tsx'
 import SteadingSheet from './SteadingSheet.tsx'
 
 function GmArea() {
@@ -13,6 +14,7 @@ function GmArea() {
       queryClient.setQueryData(['me'], null)
       queryClient.removeQueries({ queryKey: ['steading'] })
       queryClient.removeQueries({ queryKey: ['steading-log'] })
+      queryClient.removeQueries({ queryKey: ['share-link'] })
     },
   })
 
@@ -31,6 +33,7 @@ function GmArea() {
         Sign out
       </button>
       <SteadingSheet />
+      <ShareLink />
       <ChangeLog />
     </section>
   )

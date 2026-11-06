@@ -12,6 +12,15 @@ public sealed class SteadingService(SteadingDbContext db, TimeProvider timeProvi
     public Task<Steading?> GetCurrentAsync(CancellationToken cancellationToken = default) =>
         db.Steadings.SingleOrDefaultAsync(cancellationToken);
 
+    public Task<Steading?> GetByShareTokenAsync(string shareToken, CancellationToken cancellationToken = default) =>
+        db.Steadings.AsNoTracking().SingleOrDefaultAsync(s => s.ShareToken == shareToken, cancellationToken);
+
+    public async Task ReplaceShareTokenAsync(Steading steading, CancellationToken cancellationToken = default)
+    {
+        steading.ReplaceShareToken();
+        await db.SaveChangesAsync(cancellationToken);
+    }
+
     public async Task<IReadOnlyList<LogEntryResponse>> GetLogAsync(
         Guid steadingId,
         CancellationToken cancellationToken = default) =>

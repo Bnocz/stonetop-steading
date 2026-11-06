@@ -84,6 +84,11 @@ namespace Api.Data.Migrations
                     b.Property<int>("Prosperity")
                         .HasColumnType("integer");
 
+                    b.Property<string>("ShareToken")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
                     b.Property<int>("Size")
                         .HasColumnType("integer");
 
@@ -97,6 +102,9 @@ namespace Api.Data.Migrations
                         .HasColumnName("xmin");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ShareToken")
+                        .IsUnique();
 
                     b.ToTable("Steadings", t =>
                         {

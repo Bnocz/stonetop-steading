@@ -1,3 +1,6 @@
+using System.Buffers.Text;
+using System.Security.Cryptography;
+
 namespace Api.Domain;
 
 // Stores raw values only; EffectiveValues computes what debilities do to them.
@@ -27,6 +30,8 @@ public sealed class Steading
 
     public uint Version { get; private set; }
 
+    public string ShareToken { get; private set; } = NewShareToken();
+
     public SteadingStats Stats => new(Size, Fortunes, Surplus, Prosperity, Defenses, Population);
 
     public IReadOnlySet<Debility> Debilities
@@ -55,6 +60,11 @@ public sealed class Steading
         Defenses = -1,
         Population = 0,
     };
+
+    // Old links stop working as soon as this is saved.
+    public void ReplaceShareToken() => ShareToken = NewShareToken();
+
+    private static string NewShareToken() => Base64Url.EncodeToString(RandomNumberGenerator.GetBytes(32));
 
     // Returns the log entry the caller must save with this change, or null if the value didn't change.
     public LogEntry? ChangeStat(SteadingStat stat, int newValue, DateTimeOffset changedAt)
