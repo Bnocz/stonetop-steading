@@ -64,7 +64,7 @@ public sealed class Steading
             throw new ArgumentOutOfRangeException(nameof(newValue), newValue, $"Invalid value for {stat}.");
         }
 
-        var oldValue = GetStat(stat);
+        var oldValue = Stats.Get(stat);
         if (oldValue == newValue)
         {
             return null;
@@ -73,17 +73,6 @@ public sealed class Steading
         SetStat(stat, newValue);
         return new LogEntry(Id, stat, oldValue, newValue, changedAt);
     }
-
-    private int GetStat(SteadingStat stat) => stat switch
-    {
-        SteadingStat.Size => Size,
-        SteadingStat.Fortunes => Fortunes,
-        SteadingStat.Surplus => Surplus,
-        SteadingStat.Prosperity => Prosperity,
-        SteadingStat.Defenses => Defenses,
-        SteadingStat.Population => Population,
-        _ => throw new ArgumentOutOfRangeException(nameof(stat), stat, null),
-    };
 
     private void SetStat(SteadingStat stat, int value)
     {
