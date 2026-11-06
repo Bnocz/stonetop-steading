@@ -27,4 +27,6 @@ public sealed record SteadingResponse(
 
 public sealed record ChangeStatRequest(int? Value);
 
+public sealed record ShareLinkResponse(string Token);
+
 public sealed record LogEntryResponse(SteadingStat Stat, int OldValue, int NewValue, DateTimeOffset ChangedAt);

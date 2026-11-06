@@ -21,6 +21,8 @@ public sealed class SteadingDbContext(DbContextOptions<SteadingDbContext> option
             steading.Ignore(s => s.Debilities);
             steading.Property(s => s.Name).HasMaxLength(100);
             steading.Property(s => s.Version).IsRowVersion();
+            steading.Property(s => s.ShareToken).HasMaxLength(64);
+            steading.HasIndex(s => s.ShareToken).IsUnique();
 
             steading.ToTable(table =>
             {

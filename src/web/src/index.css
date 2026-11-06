@@ -21,3 +21,8 @@ td {
 .table-scroll {
   overflow-x: auto;
 }
+
+input {
+  box-sizing: border-box;
+  max-width: 100%;
+}

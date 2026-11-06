@@ -22,6 +22,7 @@ app.UseGmAuth();
 app.MapHealthEndpoints();
 app.MapAuthEndpoints();
 app.MapGmSteadingEndpoints();
+app.MapPlayerViewEndpoints();
 
 // Unknown API routes are errors, not pages for the React app to handle.
 app.MapFallback("/api/{**path}", () => Results.NotFound());

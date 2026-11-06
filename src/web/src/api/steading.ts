@@ -60,3 +60,21 @@ export function formatStatValue(stat: string, value: number): string {
   if (stat === 'Surplus') return String(value)
   return value >= 0 ? `+${value}` : String(value)
 }
+
+export interface ShareLink {
+  token: string
+}
+
+export async function fetchShareLink(): Promise<ShareLink> {
+  const response = await fetch('/api/gm/steading/share-link')
+  if (!response.ok) {
+    throw new Error(`Loading the player link failed with HTTP ${response.status}`)
+  }
+  return (await response.json()) as ShareLink
+}
+
+export async function replaceShareLink(): Promise<ShareLink> {
+  const response = await fetch('/api/gm/steading/share-link', { method: 'POST' })
+  if (!response.ok) throw new Error(await readErrorDetail(response))
+  return (await response.json()) as ShareLink
+}

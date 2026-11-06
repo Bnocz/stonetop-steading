@@ -12,6 +12,8 @@ public static class GmSteadingEndpoints
         steading.MapGet("/", GetSteading);
         steading.MapPut("/stats/{stat}", ChangeStat);
         steading.MapGet("/log", GetLog);
+        steading.MapGet("/share-link", GetShareLink);
+        steading.MapPost("/share-link", ReplaceShareLink);
         return routes;
     }
 
@@ -75,6 +77,38 @@ public static class GmSteadingEndpoints
         return steading is null
             ? Results.NotFound()
             : Results.Ok(await service.GetLogAsync(steading.Id, cancellationToken));
+    }
+
+    private static async Task<IResult> GetShareLink(
+        [FromServices] SteadingService service,
+        CancellationToken cancellationToken)
+    {
+        var steading = await service.GetCurrentAsync(cancellationToken);
+        return steading is null ? Results.NotFound() : Results.Ok(new ShareLinkResponse(steading.ShareToken));
+    }
+
+    private static async Task<IResult> ReplaceShareLink(
+        [FromServices] SteadingService service,
+        CancellationToken cancellationToken)
+    {
+        var steading = await service.GetCurrentAsync(cancellationToken);
+        if (steading is null)
+        {
+            return Results.NotFound();
+        }
+
+        try
+        {
+            await service.ReplaceShareTokenAsync(steading, cancellationToken);
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            return Results.Problem(
+                detail: "The steading changed while saving. Try again.",
+                statusCode: StatusCodes.Status409Conflict);
+        }
+
+        return Results.Ok(new ShareLinkResponse(steading.ShareToken));
     }
 
     // Matches names only: Enum.TryParse alone would also accept numbers like "3".
