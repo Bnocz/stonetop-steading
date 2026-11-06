@@ -1,13 +1,17 @@
 using Api.Domain;
+using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace Api.Data;
 
-public sealed class SteadingDbContext(DbContextOptions<SteadingDbContext> options) : DbContext(options)
+public sealed class SteadingDbContext(DbContextOptions<SteadingDbContext> options)
+    : DbContext(options), IDataProtectionKeyContext
 {
     public DbSet<Steading> Steadings => Set<Steading>();
 
     public DbSet<LogEntry> LogEntries => Set<LogEntry>();
+
+    public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

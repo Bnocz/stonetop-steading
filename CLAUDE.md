@@ -113,3 +113,11 @@ Stonetop starts at **+0 (Steady)**.
 | Malcontent | Fear, anger, despair | Forces Fortunes to reset lower and negatively impacts social cohesion moves |
 
 The app only tracks and displays debilities and their effective-value changes. It does not roll moves.
+
+### Rulings from the GM
+
+Decisions where the reference above is silent:
+
+- Lacking at Dirt: effective Prosperity stays at -2.
+- Stonetop starts as a Village (Size +0).
+- Stonetop starts with no debilities.

@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { fetchHealth } from './api/health.ts'
+import GmArea from './components/GmArea.tsx'
 
 function App() {
   const health = useQuery({ queryKey: ['health'], queryFn: fetchHealth })
@@ -12,6 +13,7 @@ function App() {
     <main>
       <h1>Stonetop Steading</h1>
       <p>API: {status}</p>
+      <GmArea />
     </main>
   )
 }
