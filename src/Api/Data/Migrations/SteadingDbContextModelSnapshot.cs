@@ -52,6 +52,43 @@ namespace Api.Data.Migrations
                     b.ToTable("LogEntries");
                 });
 
+            modelBuilder.Entity("Api.Domain.Npc", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("ArchivedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<string>("GmNotes")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)");
+
+                    b.Property<bool>("GmOnly")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<Guid>("SteadingId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SteadingId");
+
+                    b.ToTable("Npcs");
+                });
+
             modelBuilder.Entity("Api.Domain.Steading", b =>
                 {
                     b.Property<Guid>("Id")
@@ -142,6 +179,15 @@ namespace Api.Data.Migrations
                 });
 
             modelBuilder.Entity("Api.Domain.LogEntry", b =>
+                {
+                    b.HasOne("Api.Domain.Steading", null)
+                        .WithMany()
+                        .HasForeignKey("SteadingId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Api.Domain.Npc", b =>
                 {
                     b.HasOne("Api.Domain.Steading", null)
                         .WithMany()
