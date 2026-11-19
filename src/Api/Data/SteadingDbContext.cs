@@ -11,6 +11,8 @@ public sealed class SteadingDbContext(DbContextOptions<SteadingDbContext> option
 
     public DbSet<LogEntry> LogEntries => Set<LogEntry>();
 
+    public DbSet<Npc> Npcs => Set<Npc>();
+
     public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -38,6 +40,16 @@ public sealed class SteadingDbContext(DbContextOptions<SteadingDbContext> option
             entry.Property(e => e.Stat).HasConversion<string>().HasMaxLength(20);
             entry.HasOne<Steading>().WithMany().HasForeignKey(e => e.SteadingId);
             entry.HasIndex(e => new { e.SteadingId, e.ChangedAt });
+        });
+
+        modelBuilder.Entity<Npc>(npc =>
+        {
+            npc.Ignore(n => n.Archived);
+            npc.Property(n => n.Name).HasMaxLength(Npc.NameMaxLength);
+            npc.Property(n => n.Description).HasMaxLength(Npc.DescriptionMaxLength);
+            npc.Property(n => n.GmNotes).HasMaxLength(Npc.GmNotesMaxLength);
+            npc.HasOne<Steading>().WithMany().HasForeignKey(n => n.SteadingId);
+            npc.HasIndex(n => n.SteadingId);
         });
     }
 

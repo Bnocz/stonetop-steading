@@ -128,3 +128,18 @@ test('a response without a username counts as signed out', async () => {
 
   expect(await screen.findByRole('button', { name: 'Sign in' })).toBeInTheDocument()
 })
+
+test('the GM page has Steading and NPCs tabs', async () => {
+  const fetchMock = stubApi({ signedIn: true })
+  renderArea()
+
+  const steadingTab = await screen.findByRole('tab', { name: 'Steading' })
+  expect(steadingTab).toHaveAttribute('aria-selected', 'true')
+  expect(await screen.findByText('Could not load the steading.')).toBeInTheDocument()
+
+  fireEvent.click(screen.getByRole('tab', { name: 'NPCs' }))
+
+  expect(await screen.findByText('Could not load the NPCs.')).toBeInTheDocument()
+  expect(screen.queryByText('Could not load the steading.')).not.toBeInTheDocument()
+  expect(fetchMock).toHaveBeenCalledWith('/api/gm/npcs')
+})

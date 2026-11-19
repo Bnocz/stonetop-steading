@@ -1,3 +1,4 @@
+using Api.Npcs;
 using Api.Steadings;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
@@ -21,6 +22,7 @@ public static class DatabaseSetup
             options => options.UseNpgsql(connectionString, npgsql => npgsql.EnableRetryOnFailure()));
         services.AddSingleton(TimeProvider.System);
         services.AddScoped<SteadingService>();
+        services.AddScoped<NpcService>();
 
         // Render's disk is wiped on restart, so keep the keys that sign session cookies in the database.
         services.AddDataProtection()

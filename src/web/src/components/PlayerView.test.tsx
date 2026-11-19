@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen, within } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import { expect, test, vi } from 'vitest'
 import PlayerView from './PlayerView.tsx'
 
@@ -103,4 +103,64 @@ test('a server error shows a load error, not the invalid link message', async ()
   renderView()
 
   expect(await screen.findByText('Could not load the steading.')).toBeInTheDocument()
+})
+
+const playerNpcs = [
+  { id: 'n1', name: 'Aratis', description: 'Smith by the well.' },
+  { id: 'n2', name: 'Vesna', description: '' },
+]
+
+function stubApiWithNpcs(npcs: object[] = playerNpcs) {
+  const fetchMock = vi.fn((url: string) => {
+    if (url === '/api/view/abc123/steading') return Promise.resolve(Response.json(sheet))
+    if (url === '/api/view/abc123/log') return Promise.resolve(Response.json(log))
+    if (url === '/api/view/abc123/npcs') return Promise.resolve(Response.json(npcs))
+    return Promise.resolve(new Response(null, { status: 404 }))
+  })
+  vi.stubGlobal('fetch', fetchMock)
+  return fetchMock
+}
+
+test('the steading tab is selected first and NPCs load only when their tab opens', async () => {
+  const fetchMock = stubApiWithNpcs()
+
+  renderView()
+
+  await screen.findByRole('row', { name: /^Prosperity\b/ })
+  expect(screen.getByRole('tab', { name: 'Steading' })).toHaveAttribute('aria-selected', 'true')
+  expect(screen.getByRole('tab', { name: 'NPCs' })).toHaveAttribute('aria-selected', 'false')
+  expect(fetchMock.mock.calls.map(([url]) => url)).not.toContain('/api/view/abc123/npcs')
+})
+
+test('the NPCs tab lists NPCs with their descriptions', async () => {
+  stubApiWithNpcs()
+  renderView()
+
+  fireEvent.click(await screen.findByRole('tab', { name: 'NPCs' }))
+
+  const aratis = within(await screen.findByRole('article', { name: 'Aratis' }))
+  expect(aratis.getByText('Smith by the well.')).toBeInTheDocument()
+  expect(screen.getByRole('article', { name: 'Vesna' })).toBeInTheDocument()
+  expect(screen.getByRole('tab', { name: 'NPCs' })).toHaveAttribute('aria-selected', 'true')
+  expect(screen.queryByRole('table')).not.toBeInTheDocument()
+  expect(screen.queryByRole('button')).not.toBeInTheDocument()
+  expect(screen.queryByRole('textbox')).not.toBeInTheDocument()
+})
+
+test('the NPCs tab says when there are none', async () => {
+  stubApiWithNpcs([])
+  renderView()
+
+  fireEvent.click(await screen.findByRole('tab', { name: 'NPCs' }))
+
+  expect(await screen.findByText('No NPCs yet.')).toBeInTheDocument()
+})
+
+test('an NPC load error shows a message', async () => {
+  stubApi()
+  renderView()
+
+  fireEvent.click(await screen.findByRole('tab', { name: 'NPCs' }))
+
+  expect(await screen.findByText('Could not load the NPCs.')).toBeInTheDocument()
 })
