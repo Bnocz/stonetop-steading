@@ -1,0 +1,184 @@
+using Api.Domain;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Net.Http.Headers;
+
+namespace Api.Maps;
+
+public static class MapEndpoints
+{
+    public static IEndpointRouteBuilder MapMapEndpoints(this IEndpointRouteBuilder routes)
+    {
+        var map = routes.MapGroup("/api/gm/map").RequireAuthorization();
+        map.MapGet("/", GetMap);
+        map.MapGet("/image", GetImage);
+        map.MapPut("/image", UploadImage);
+
+        var sessions = routes.MapGroup("/api/gm/sessions").RequireAuthorization();
+        sessions.MapGet("/", ListSessions);
+        sessions.MapPost("/", CreateSession);
+        sessions.MapPut("/{id:guid}", UpdateSession);
+        sessions.MapPut("/{id:guid}/waypoints", ReplaceRoute);
+        sessions.MapDelete("/{id:guid}", DeleteSession);
+        return routes;
+    }
+
+    // [FromServices] is explicit because MapService isn't registered without a database.
+    private static async Task<IResult> GetMap([FromServices] MapService service, CancellationToken cancellationToken) =>
+        Results.Ok(new MapResponse(await service.GetImageInfoAsync(cancellationToken)));
+
+    private static async Task<IResult> GetImage(
+        HttpContext context,
+        [FromServices] MapService service,
+        CancellationToken cancellationToken)
+    {
+        var image = await service.GetImageAsync(cancellationToken);
+        if (image is null)
+        {
+            return Results.NotFound();
+        }
+
+        return ImageResult(context, image);
+    }
+
+    // The body is the raw image file. Its type is checked from its bytes, not the Content-Type header.
+    private static async Task<IResult> UploadImage(
+        HttpRequest request,
+        [FromServices] MapService service,
+        CancellationToken cancellationToken)
+    {
+        if (request.ContentLength > MapImage.MaxBytes)
+        {
+            return TooLarge();
+        }
+
+        var data = await ReadUpToAsync(request.Body, MapImage.MaxBytes + 1, cancellationToken);
+        if (data.Length > MapImage.MaxBytes)
+        {
+            return TooLarge();
+        }
+
+        try
+        {
+            return Results.Ok(await service.UploadImageAsync(data, cancellationToken));
+        }
+        catch (ArgumentException exception)
+        {
+            return BadRequest(exception);
+        }
+    }
+
+    private static async Task<IResult> ListSessions([FromServices] MapService service, CancellationToken cancellationToken) =>
+        Results.Ok(await service.ListSessionsAsync(cancellationToken));
+
+    private static async Task<IResult> CreateSession(
+        SessionRequest request,
+        [FromServices] MapService service,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var created = await service.CreateSessionAsync(request, cancellationToken);
+            return Results.Created($"/api/gm/sessions/{created.Id}", created);
+        }
+        catch (ArgumentException exception)
+        {
+            return BadRequest(exception);
+        }
+        catch (DuplicateSessionNumberException exception)
+        {
+            return Conflict(exception);
+        }
+    }
+
+    private static async Task<IResult> UpdateSession(
+        Guid id,
+        SessionRequest request,
+        [FromServices] MapService service,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var updated = await service.UpdateSessionAsync(id, request, cancellationToken);
+            return updated is null ? Results.NotFound() : Results.Ok(updated);
+        }
+        catch (ArgumentException exception)
+        {
+            return BadRequest(exception);
+        }
+        catch (DuplicateSessionNumberException exception)
+        {
+            return Conflict(exception);
+        }
+    }
+
+    private static async Task<IResult> ReplaceRoute(
+        Guid id,
+        RouteRequest request,
+        [FromServices] MapService service,
+        CancellationToken cancellationToken)
+    {
+        if (request.Waypoints is null)
+        {
+            return Results.Problem(detail: "A list of waypoints is required.", statusCode: StatusCodes.Status400BadRequest);
+        }
+
+        try
+        {
+            var updated = await service.ReplaceRouteAsync(id, request.Waypoints, cancellationToken);
+            return updated is null ? Results.NotFound() : Results.Ok(updated);
+        }
+        catch (ArgumentException exception)
+        {
+            return BadRequest(exception);
+        }
+    }
+
+    private static async Task<IResult> DeleteSession(
+        Guid id,
+        [FromServices] MapService service,
+        CancellationToken cancellationToken) =>
+        await service.DeleteSessionAsync(id, cancellationToken) ? Results.NoContent() : Results.NotFound();
+
+    // Shared with the player view: browsers revalidate with the ETag instead of keeping a stale map.
+    internal static IResult ImageResult(HttpContext context, MapImage image)
+    {
+        context.Response.Headers.CacheControl = "private, no-cache";
+        context.Response.Headers.XContentTypeOptions = "nosniff";
+        return Results.Bytes(
+            image.Data,
+            image.ContentType,
+            lastModified: image.UploadedAt,
+            entityTag: new EntityTagHeaderValue($"\"{image.Version}\""));
+    }
+
+    private static async Task<byte[]> ReadUpToAsync(Stream body, int limit, CancellationToken cancellationToken)
+    {
+        using var buffer = new MemoryStream();
+        var chunk = new byte[81920];
+        int read;
+        while (buffer.Length < limit
+            && (read = await body.ReadAsync(chunk.AsMemory(0, (int)Math.Min(chunk.Length, limit - buffer.Length)), cancellationToken)) > 0)
+        {
+            buffer.Write(chunk, 0, read);
+        }
+
+        return buffer.ToArray();
+    }
+
+    private static IResult TooLarge() =>
+        Results.Problem(
+            detail: $"The map can be at most {MapImage.MaxBytes / (1024 * 1024)} MB.",
+            statusCode: StatusCodes.Status413PayloadTooLarge);
+
+    private static IResult BadRequest(ArgumentException exception) =>
+        Results.Problem(detail: StripParameterName(exception), statusCode: StatusCodes.Status400BadRequest);
+
+    private static IResult Conflict(DuplicateSessionNumberException exception) =>
+        Results.Problem(detail: exception.Message, statusCode: StatusCodes.Status409Conflict);
+
+    // ArgumentException appends " (Parameter 'name')" to Message; the client only needs the sentence.
+    private static string StripParameterName(ArgumentException exception) =>
+        exception.ParamName is null
+            ? exception.Message
+            : exception.Message.Replace($" (Parameter '{exception.ParamName}')", "");
+}

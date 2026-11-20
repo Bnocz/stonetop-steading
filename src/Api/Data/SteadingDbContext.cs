@@ -13,6 +13,10 @@ public sealed class SteadingDbContext(DbContextOptions<SteadingDbContext> option
 
     public DbSet<Npc> Npcs => Set<Npc>();
 
+    public DbSet<MapImage> MapImages => Set<MapImage>();
+
+    public DbSet<PlaySession> PlaySessions => Set<PlaySession>();
+
     public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -50,6 +54,27 @@ public sealed class SteadingDbContext(DbContextOptions<SteadingDbContext> option
             npc.Property(n => n.GmNotes).HasMaxLength(Npc.GmNotesMaxLength);
             npc.HasOne<Steading>().WithMany().HasForeignKey(n => n.SteadingId);
             npc.HasIndex(n => n.SteadingId);
+        });
+
+        modelBuilder.Entity<MapImage>(image =>
+        {
+            image.Property(i => i.ContentType).HasMaxLength(20);
+            image.Property(i => i.Version).HasMaxLength(16);
+            image.HasOne<Steading>().WithMany().HasForeignKey(i => i.SteadingId);
+            image.HasIndex(i => i.SteadingId).IsUnique();
+        });
+
+        modelBuilder.Entity<PlaySession>(session =>
+        {
+            session.Property(s => s.Title).HasMaxLength(PlaySession.TitleMaxLength);
+            session.HasOne<Steading>().WithMany().HasForeignKey(s => s.SteadingId);
+            session.HasIndex(s => new { s.SteadingId, s.Number }).IsUnique();
+            session.ToTable(table => table.HasCheckConstraint(
+                "CK_PlaySessions_Number",
+                $"\"Number\" BETWEEN {PlaySession.MinNumber} AND {PlaySession.MaxNumber}"));
+
+            // The route is always read and replaced whole, so it lives in one JSON column, in order.
+            session.OwnsMany(s => s.Waypoints, waypoint => waypoint.ToJson());
         });
     }
 

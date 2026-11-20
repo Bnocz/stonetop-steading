@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { fetchMe, logout } from '../api/auth.ts'
 import ChangeLog from './ChangeLog.tsx'
+import GmMap from './GmMap.tsx'
 import LoginForm from './LoginForm.tsx'
 import NpcManager from './NpcManager.tsx'
 import ShareLink from './ShareLink.tsx'
@@ -18,6 +19,8 @@ function GmArea() {
       queryClient.removeQueries({ queryKey: ['steading-log'] })
       queryClient.removeQueries({ queryKey: ['share-link'] })
       queryClient.removeQueries({ queryKey: ['npcs'] })
+      queryClient.removeQueries({ queryKey: ['map'] })
+      queryClient.removeQueries({ queryKey: ['sessions'] })
     },
   })
 
@@ -51,6 +54,7 @@ function GmArea() {
             ),
           },
           { label: 'NPCs', content: <NpcManager /> },
+          { label: 'Map', content: <GmMap /> },
         ]}
       />
     </section>

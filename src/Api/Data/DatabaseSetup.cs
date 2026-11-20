@@ -1,3 +1,4 @@
+using Api.Maps;
 using Api.Npcs;
 using Api.Steadings;
 using Microsoft.AspNetCore.DataProtection;
@@ -23,6 +24,7 @@ public static class DatabaseSetup
         services.AddSingleton(TimeProvider.System);
         services.AddScoped<SteadingService>();
         services.AddScoped<NpcService>();
+        services.AddScoped<MapService>();
 
         // Render's disk is wiped on restart, so keep the keys that sign session cookies in the database.
         services.AddDataProtection()
