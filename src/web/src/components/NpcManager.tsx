@@ -134,18 +134,20 @@ function NpcCard({ npc, children }: { npc: Npc; children: ReactNode }) {
       {npc.portraitVersion && (
         <img className="portrait" src={gmPortraitUrl(npc.id, npc.portraitVersion)} alt={`Portrait of ${npc.name}`} />
       )}
-      <div className="npc-heading">
-        <h3 id={headingId}>{npc.name}</h3>
-        {npc.gmOnly && <p className="seal">Hidden from players</p>}
-      </div>
-      {npc.description && <p className="npc-text">{npc.description}</p>}
-      {npc.gmNotes && (
-        <div className="secret">
-          <p className="secret-title">GM notes</p>
-          <p className="npc-text">{npc.gmNotes}</p>
+      <div className="npc-body">
+        <div className="npc-heading">
+          <h3 id={headingId}>{npc.name}</h3>
+          {npc.gmOnly && <p className="seal">Hidden from players</p>}
         </div>
-      )}
-      <div className="npc-actions">{children}</div>
+        {npc.description && <p className="npc-text">{npc.description}</p>}
+        {npc.gmNotes && (
+          <div className="secret">
+            <p className="secret-title">GM notes</p>
+            <p className="npc-text">{npc.gmNotes}</p>
+          </div>
+        )}
+        <div className="npc-actions">{children}</div>
+      </div>
     </article>
   )
 }

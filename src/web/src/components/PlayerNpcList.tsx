@@ -38,8 +38,10 @@ function PlayerNpcCard({ npc, portraitUrl }: { npc: PlayerNpc; portraitUrl: stri
   return (
     <article className="npc" aria-labelledby={headingId}>
       {portraitUrl && <img className="portrait" src={portraitUrl} alt={`Portrait of ${npc.name}`} />}
-      <h3 id={headingId}>{npc.name}</h3>
-      {npc.description && <p className="npc-text">{npc.description}</p>}
+      <div className="npc-body">
+        <h3 id={headingId}>{npc.name}</h3>
+        {npc.description && <p className="npc-text">{npc.description}</p>}
+      </div>
     </article>
   )
 }
