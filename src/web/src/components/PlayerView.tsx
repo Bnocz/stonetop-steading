@@ -33,11 +33,13 @@ function PlayerView({ token }: { token: string }) {
             content: (
               <>
                 <div className="table-scroll">
-                  <table>
+                  <table className="stat-block">
                     <thead>
                       <tr>
                         <th scope="col">Stat</th>
-                        <th scope="col">Value</th>
+                        <th scope="col" className="num">
+                          Value
+                        </th>
                         <th scope="col">Label</th>
                       </tr>
                     </thead>
@@ -45,14 +47,14 @@ function PlayerView({ token }: { token: string }) {
                       {stats.map((stat) => (
                         <tr key={stat.stat}>
                           <th scope="row">{stat.stat}</th>
-                          <td>{formatStatValue(stat.stat, stat.value)}</td>
-                          <td>{stat.label}</td>
+                          <td className="num">{formatStatValue(stat.stat, stat.value)}</td>
+                          <td className="label">{stat.label}</td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
-                <p>Debilities: {debilities.length > 0 ? debilities.join(', ') : 'none'}</p>
+                <p className="debilities">Debilities: {debilities.length > 0 ? debilities.join(', ') : 'none'}</p>
                 <h2>Change log</h2>
                 {log.isError && <p>Could not load the change log.</p>}
                 {log.data && <LogList entries={log.data} />}

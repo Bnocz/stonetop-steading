@@ -65,7 +65,7 @@ function NpcManager() {
       {editing === 'new' ? (
         form('New NPC', null)
       ) : (
-        <button type="button" onClick={() => open('new')}>
+        <button type="button" className="primary" onClick={() => open('new')}>
           Add NPC
         </button>
       )}
@@ -123,11 +123,18 @@ function NpcCard({ npc, children }: { npc: Npc; children: ReactNode }) {
   const headingId = useId()
   return (
     <article className="npc" aria-labelledby={headingId}>
-      <h3 id={headingId}>{npc.name}</h3>
-      {npc.gmOnly && <p className="npc-hidden">Hidden from players</p>}
+      <div className="npc-heading">
+        <h3 id={headingId}>{npc.name}</h3>
+        {npc.gmOnly && <p className="seal">Hidden from players</p>}
+      </div>
       {npc.description && <p className="npc-text">{npc.description}</p>}
-      {npc.gmNotes && <p className="npc-text">GM notes: {npc.gmNotes}</p>}
-      <p>{children}</p>
+      {npc.gmNotes && (
+        <div className="secret">
+          <p className="secret-title">GM notes</p>
+          <p className="npc-text">{npc.gmNotes}</p>
+        </div>
+      )}
+      <div className="npc-actions">{children}</div>
     </article>
   )
 }

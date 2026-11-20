@@ -43,7 +43,7 @@ function LoginForm() {
         />
       </p>
       {signIn.isError && <p role="alert">{signIn.error.message}</p>}
-      <button type="submit" disabled={signIn.isPending}>
+      <button type="submit" className="primary" disabled={signIn.isPending}>
         Sign in
       </button>
     </form>
