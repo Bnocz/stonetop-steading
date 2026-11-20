@@ -6,7 +6,7 @@ A web app for running a [Stonetop](#disclaimer) tabletop campaign between sessio
 
 **Stack:** ASP.NET Core 10 minimal API · EF Core + PostgreSQL · React 19 + TypeScript + React Query · xUnit + Testcontainers · Vitest · Docker · GitHub Actions → Render + Neon
 
-> The screenshots below use a made-up demo steading, *Hollowford*, with an original demo map drawn for this README. My own campaign's data stays private.
+> The player Steading and NPC screenshots come straight from my campaign's live player link. The map and GM screenshots use a made-up demo steading, *Hollowford*, with an original map drawn for this README: my campaign's map comes from the Stonetop book, and the GM views hold my players' secrets.
 
 ## What the players see
 
@@ -14,7 +14,7 @@ Players get a link like `/view/ember-moss-lantern-crow`. There's no account and 
 
 | The steading | The people they've met |
 | --- | --- |
-| ![Player view of the steading: stats with their labels, active debilities, and the change log](docs/screenshots/player-steading.webp) | ![Player view of the NPCs: portraits and what the party knows about each one](docs/screenshots/player-npcs.webp) |
+| ![Player view of the steading: stats with their labels, debilities, and the change log](docs/screenshots/player-steading.webp) | ![Player view of the NPCs: portraits and what the party knows about each one](docs/screenshots/player-npcs.webp) |
 
 **The map, session by session.** Arrows step through the sessions. Each one shows that session's route with numbered stops and direction arrows, earlier journeys faded underneath, and a marker where the party is now. It opens on the latest session.
 
