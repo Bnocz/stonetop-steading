@@ -19,6 +19,11 @@ public static class MapEndpoints
         sessions.MapPut("/{id:guid}", UpdateSession);
         sessions.MapPut("/{id:guid}/waypoints", ReplaceRoute);
         sessions.MapDelete("/{id:guid}", DeleteSession);
+
+        var view = routes.MapGroup("/api/view/{shareToken}");
+        view.MapGet("/map", GetPlayerMap);
+        view.MapGet("/map/image", GetPlayerImage);
+        view.MapGet("/sessions", ListPlayerSessions);
         return routes;
     }
 
@@ -66,6 +71,46 @@ public static class MapEndpoints
             return BadRequest(exception);
         }
     }
+
+    private static async Task<IResult> GetPlayerMap(
+        string shareToken,
+        HttpContext context,
+        [FromServices] MapService service,
+        CancellationToken cancellationToken)
+    {
+        DoNotStore(context);
+        var steadingId = await service.FindSteadingByShareTokenAsync(shareToken, cancellationToken);
+        return steadingId is { } id
+            ? Results.Ok(new MapResponse(await service.GetImageInfoAsync(id, cancellationToken)))
+            : Results.NotFound();
+    }
+
+    private static async Task<IResult> GetPlayerImage(
+        string shareToken,
+        HttpContext context,
+        [FromServices] MapService service,
+        CancellationToken cancellationToken)
+    {
+        var steadingId = await service.FindSteadingByShareTokenAsync(shareToken, cancellationToken);
+        var image = steadingId is { } id ? await service.GetImageAsync(id, cancellationToken) : null;
+        return image is null ? Results.NotFound() : ImageResult(context, image);
+    }
+
+    private static async Task<IResult> ListPlayerSessions(
+        string shareToken,
+        HttpContext context,
+        [FromServices] MapService service,
+        CancellationToken cancellationToken)
+    {
+        DoNotStore(context);
+        var steadingId = await service.FindSteadingByShareTokenAsync(shareToken, cancellationToken);
+        return steadingId is { } id
+            ? Results.Ok(await service.ListPlayerSessionsAsync(id, cancellationToken))
+            : Results.NotFound();
+    }
+
+    // Without this, a browser could keep showing a session after the GM hides it or replaces the link.
+    private static void DoNotStore(HttpContext context) => context.Response.Headers.CacheControl = "no-store";
 
     private static async Task<IResult> ListSessions([FromServices] MapService service, CancellationToken cancellationToken) =>
         Results.Ok(await service.ListSessionsAsync(cancellationToken));

@@ -67,6 +67,29 @@ export function uploadMapImage(file: File): Promise<MapInfo['image']> {
   })
 }
 
+export interface PlayerSession {
+  id: string
+  number: number
+  title: string
+  waypoints: Waypoint[]
+}
+
+export async function fetchPlayerMap(token: string): Promise<MapInfo> {
+  const response = await fetch(`/api/view/${token}/map`)
+  if (!response.ok) throw new Error(`Loading the map failed with HTTP ${response.status}`)
+  return (await response.json()) as MapInfo
+}
+
+export function playerMapImageUrl(token: string, version: string): string {
+  return `/api/view/${token}/map/image?v=${encodeURIComponent(version)}`
+}
+
+export async function fetchPlayerSessions(token: string): Promise<PlayerSession[]> {
+  const response = await fetch(`/api/view/${token}/sessions`)
+  if (!response.ok) throw new Error(`Loading the sessions failed with HTTP ${response.status}`)
+  return (await response.json()) as PlayerSession[]
+}
+
 export async function fetchSessions(): Promise<PlaySession[]> {
   const response = await fetch('/api/gm/sessions')
   if (!response.ok) throw new Error(`Loading the sessions failed with HTTP ${response.status}`)

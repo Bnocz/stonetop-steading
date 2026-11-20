@@ -17,6 +17,18 @@ public sealed record RouteRequest(IReadOnlyList<WaypointRequest>? Waypoints);
 
 public sealed record WaypointResponse(double X, double Y, string Label);
 
+// Everything players can see about a session. It lists each field on purpose, so GmOnly
+// and new columns can't reach players unless they're added here.
+public sealed record PlayerSessionResponse(Guid Id, int Number, string Title, IReadOnlyList<WaypointResponse> Waypoints)
+{
+    public static PlayerSessionResponse From(PlaySession session) =>
+        new(
+            session.Id,
+            session.Number,
+            session.Title,
+            session.Waypoints.Select(w => new WaypointResponse(w.X, w.Y, w.Label)).ToList());
+}
+
 public sealed record SessionResponse(
     Guid Id,
     int Number,

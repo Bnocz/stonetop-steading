@@ -164,3 +164,22 @@ test('an NPC load error shows a message', async () => {
 
   expect(await screen.findByText('Could not load the NPCs.')).toBeInTheDocument()
 })
+
+test('the map tab loads the map only when it opens', async () => {
+  const fetchMock = vi.fn((url: string) => {
+    if (url === '/api/view/abc123/steading') return Promise.resolve(Response.json(sheet))
+    if (url === '/api/view/abc123/log') return Promise.resolve(Response.json(log))
+    if (url === '/api/view/abc123/map') return Promise.resolve(Response.json({ image: null }))
+    if (url === '/api/view/abc123/sessions') return Promise.resolve(Response.json([]))
+    return Promise.resolve(new Response(null, { status: 404 }))
+  })
+  vi.stubGlobal('fetch', fetchMock)
+  renderView()
+
+  await screen.findByRole('row', { name: /^Prosperity\b/ })
+  expect(fetchMock.mock.calls.map(([url]) => url)).not.toContain('/api/view/abc123/map')
+
+  fireEvent.click(screen.getByRole('tab', { name: 'Map' }))
+
+  expect(await screen.findByText("The GM hasn't added a map yet.")).toBeInTheDocument()
+})

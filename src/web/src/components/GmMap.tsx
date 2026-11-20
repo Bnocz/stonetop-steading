@@ -17,6 +17,7 @@ import {
 } from '../api/map.ts'
 import { mapStateAt, type MapState } from '../map/route.ts'
 import MapView from './MapView.tsx'
+import SessionNav from './SessionNav.tsx'
 import StopList from './StopList.tsx'
 
 type Mode = 'view' | 'route' | 'new' | 'edit'
@@ -115,33 +116,15 @@ function GmMap() {
     <section>
       <h2>Map</h2>
       {session ? (
-        <nav className="session-nav" aria-label="Sessions">
-          <button
-            type="button"
-            className="session-arrow"
-            aria-label="Previous session"
-            disabled={index <= 0 || mode !== 'view'}
-            onClick={() => setSelectedId(list[index - 1].id)}
-          >
-            ‹
-          </button>
-          <div className="session-title">
-            <h3>{sessionHeading(session)}</h3>
-            <p>
-              {index + 1} of {list.length}
-            </p>
-            {session.gmOnly && <p className="seal">Hidden from players</p>}
-          </div>
-          <button
-            type="button"
-            className="session-arrow"
-            aria-label="Next session"
-            disabled={index >= list.length - 1 || mode !== 'view'}
-            onClick={() => setSelectedId(list[index + 1].id)}
-          >
-            ›
-          </button>
-        </nav>
+        <SessionNav
+          session={session}
+          index={index}
+          count={list.length}
+          locked={mode !== 'view'}
+          onSelect={(next) => setSelectedId(list[next].id)}
+        >
+          {session.gmOnly && <p className="seal">Hidden from players</p>}
+        </SessionNav>
       ) : (
         <p>No sessions yet.</p>
       )}
