@@ -52,6 +52,40 @@ namespace Api.Data.Migrations
                     b.ToTable("LogEntries");
                 });
 
+            modelBuilder.Entity("Api.Domain.MapImage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<byte[]>("Data")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
+                    b.Property<Guid>("SteadingId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("UploadedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Version")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SteadingId")
+                        .IsUnique();
+
+                    b.ToTable("MapImages");
+                });
+
             modelBuilder.Entity("Api.Domain.Npc", b =>
                 {
                     b.Property<Guid>("Id")
@@ -87,6 +121,37 @@ namespace Api.Data.Migrations
                     b.HasIndex("SteadingId");
 
                     b.ToTable("Npcs");
+                });
+
+            modelBuilder.Entity("Api.Domain.PlaySession", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("GmOnly")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("Number")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("SteadingId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SteadingId", "Number")
+                        .IsUnique();
+
+                    b.ToTable("PlaySessions", t =>
+                        {
+                            t.HasCheckConstraint("CK_PlaySessions_Number", "\"Number\" BETWEEN 1 AND 999");
+                        });
                 });
 
             modelBuilder.Entity("Api.Domain.Steading", b =>
@@ -187,6 +252,15 @@ namespace Api.Data.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Api.Domain.MapImage", b =>
+                {
+                    b.HasOne("Api.Domain.Steading", null)
+                        .WithMany()
+                        .HasForeignKey("SteadingId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Api.Domain.Npc", b =>
                 {
                     b.HasOne("Api.Domain.Steading", null)
@@ -194,6 +268,43 @@ namespace Api.Data.Migrations
                         .HasForeignKey("SteadingId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Api.Domain.PlaySession", b =>
+                {
+                    b.HasOne("Api.Domain.Steading", null)
+                        .WithMany()
+                        .HasForeignKey("SteadingId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.OwnsMany("Api.Domain.Waypoint", "Waypoints", b1 =>
+                        {
+                            b1.Property<Guid>("PlaySessionId");
+
+                            b1.Property<int>("__synthesizedOrdinal")
+                                .ValueGeneratedOnAdd();
+
+                            b1.Property<string>("Label")
+                                .IsRequired();
+
+                            b1.Property<double>("X");
+
+                            b1.Property<double>("Y");
+
+                            b1.HasKey("PlaySessionId", "__synthesizedOrdinal");
+
+                            b1.ToTable("PlaySessions");
+
+                            b1
+                                .ToJson("Waypoints")
+                                .HasColumnType("jsonb");
+
+                            b1.WithOwner()
+                                .HasForeignKey("PlaySessionId");
+                        });
+
+                    b.Navigation("Waypoints");
                 });
 #pragma warning restore 612, 618
         }

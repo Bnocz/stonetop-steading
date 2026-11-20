@@ -13,7 +13,11 @@ public sealed class PostgresCollection : ICollectionFixture<PostgresFixture>
 
 public sealed class PostgresFixture : IAsyncLifetime
 {
-    private readonly PostgreSqlContainer _container = new PostgreSqlBuilder("postgres:17-alpine").Build();
+    // Every test gets its own database, and Npgsql keeps idle pooled connections open for each,
+    // so the default limit of 100 connections runs out as the suite grows.
+    private readonly PostgreSqlContainer _container = new PostgreSqlBuilder("postgres:17-alpine")
+        .WithCommand("-c", "max_connections=500")
+        .Build();
 
     public Task InitializeAsync() => _container.StartAsync();
 

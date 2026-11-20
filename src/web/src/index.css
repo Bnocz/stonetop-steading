@@ -369,7 +369,166 @@ table {
   width: 100%;
 }
 
-/* ---------- Phone ---------- */
+/* ---------- Map ---------- */
+.session-nav {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 0 0.75rem;
+}
+
+.session-title {
+  flex: 1;
+  text-align: center;
+}
+
+.session-title h3 {
+  font-size: 1.25rem;
+}
+
+.session-title p {
+  margin: 0.1rem 0 0;
+  font-size: 0.9rem;
+  font-style: italic;
+  color: var(--ink-soft);
+}
+
+.session-title .seal {
+  display: inline-block;
+  margin-top: 0.3rem;
+  font-style: normal;
+  color: var(--on-blood);
+}
+
+.session-arrow {
+  flex: none;
+  width: 2.6rem;
+  height: 2.4rem;
+  padding: 0;
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.map-frame {
+  position: relative;
+  /* The map file is light line art; inverting it gives pale ink on this dark ground. */
+  background: #1d1a17;
+  border: 1.5px solid var(--rule);
+}
+
+.map-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  filter: invert(1) brightness(1.75) sepia(0.3);
+  mix-blend-mode: screen;
+}
+
+.map-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.map-frame.editing .map-overlay {
+  cursor: crosshair;
+}
+
+.route-earlier {
+  fill: none;
+  stroke: var(--blood-ink);
+  stroke-opacity: 0.38;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.route-current {
+  fill: none;
+  stroke: var(--blood-ink);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.route-arrow {
+  fill: var(--blood-ink);
+}
+
+.stop,
+.party-dot {
+  fill: var(--blood);
+  stroke: var(--on-blood);
+}
+
+.stop.last {
+  fill: var(--blood-ink);
+}
+
+.stop-number {
+  font-family: var(--head-font);
+  font-weight: 700;
+  text-anchor: middle;
+  fill: var(--on-blood);
+  pointer-events: none;
+}
+
+.party-ring {
+  fill: none;
+  stroke: var(--blood-ink);
+}
+
+.route-editor {
+  margin-top: 0.75rem;
+}
+
+.stop-list {
+  padding-left: 1.5rem;
+}
+
+.stop-list li {
+  margin: 0.3rem 0;
+}
+
+.stop-legend {
+  margin: 0.75rem 0;
+  padding-left: 1.75rem;
+}
+
+.stop-legend li {
+  padding: 0.1rem 0;
+}
+
+.stop-legend .unnamed,
+.stop-legend .here {
+  font-style: italic;
+  color: var(--ink-soft);
+}
+
+.map-upload {
+  margin-top: 1rem;
+  font-size: 0.95rem;
+  color: var(--ink-soft);
+}
+
+input[type='file'] {
+  padding: 0.2rem;
+  font-size: 0.95rem;
+}
+
+input[type='file']::file-selector-button {
+  margin-right: 0.6rem;
+  padding: 0.15rem 0.7rem;
+  font-family: var(--head-font);
+  font-size: 0.95rem;
+  color: var(--ink);
+  background: transparent;
+  border: 1.5px solid var(--ink-soft);
+  border-radius: 2px 5px 3px 6px / 6px 3px 5px 2px;
+  cursor: pointer;
+}
+
+
 @media (max-width: 480px) {
   h1 {
     font-size: 2rem;

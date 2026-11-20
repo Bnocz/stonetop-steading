@@ -1,6 +1,7 @@
 using Api.Auth;
 using Api.Data;
 using Api.Health;
+using Api.Maps;
 using Api.Npcs;
 using Api.Steadings;
 using Api.Web;
@@ -25,6 +26,7 @@ app.MapAuthEndpoints();
 app.MapGmSteadingEndpoints();
 app.MapPlayerViewEndpoints();
 app.MapNpcEndpoints();
+app.MapMapEndpoints();
 
 // Unknown API routes are errors, not pages for the React app to handle.
 app.MapFallback("/api/{**path}", () => Results.NotFound());
