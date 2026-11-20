@@ -21,6 +21,12 @@ public sealed class SteadingService(SteadingDbContext db, TimeProvider timeProvi
         await db.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task UseReadableShareTokenAsync(Steading steading, CancellationToken cancellationToken = default)
+    {
+        steading.UseReadableShareToken();
+        await db.SaveChangesAsync(cancellationToken);
+    }
+
     public async Task<IReadOnlyList<LogEntryResponse>> GetLogAsync(
         Guid steadingId,
         CancellationToken cancellationToken = default) =>

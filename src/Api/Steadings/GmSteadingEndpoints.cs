@@ -14,6 +14,7 @@ public static class GmSteadingEndpoints
         steading.MapGet("/log", GetLog);
         steading.MapGet("/share-link", GetShareLink);
         steading.MapPost("/share-link", ReplaceShareLink);
+        steading.MapPost("/share-link/readable", UseReadableShareLink);
         return routes;
     }
 
@@ -100,6 +101,30 @@ public static class GmSteadingEndpoints
         try
         {
             await service.ReplaceShareTokenAsync(steading, cancellationToken);
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            return Results.Problem(
+                detail: "The steading changed while saving. Try again.",
+                statusCode: StatusCodes.Status409Conflict);
+        }
+
+        return Results.Ok(new ShareLinkResponse(steading.ShareToken));
+    }
+
+    private static async Task<IResult> UseReadableShareLink(
+        [FromServices] SteadingService service,
+        CancellationToken cancellationToken)
+    {
+        var steading = await service.GetCurrentAsync(cancellationToken);
+        if (steading is null)
+        {
+            return Results.NotFound();
+        }
+
+        try
+        {
+            await service.UseReadableShareTokenAsync(steading, cancellationToken);
         }
         catch (DbUpdateConcurrencyException)
         {

@@ -73,6 +73,13 @@ export async function fetchShareLink(): Promise<ShareLink> {
   return (await response.json()) as ShareLink
 }
 
+// Swaps the link for four random words, e.g. ember-moss-lantern-crow.
+export async function makeReadableShareLink(): Promise<ShareLink> {
+  const response = await fetch('/api/gm/steading/share-link/readable', { method: 'POST' })
+  if (!response.ok) throw new Error(await readErrorDetail(response))
+  return (await response.json()) as ShareLink
+}
+
 export async function replaceShareLink(): Promise<ShareLink> {
   const response = await fetch('/api/gm/steading/share-link', { method: 'POST' })
   if (!response.ok) throw new Error(await readErrorDetail(response))
