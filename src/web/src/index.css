@@ -390,6 +390,11 @@ table {
   box-shadow: 0 0 0 3px var(--leaf), 0 0 0 4px var(--rule);
 }
 
+/* Its own block context: the text, notes and buttons stay in one column beside the portrait. */
+.npc-body {
+  display: flow-root;
+}
+
 .portrait-editor {
   display: flex;
   flex-wrap: wrap;
