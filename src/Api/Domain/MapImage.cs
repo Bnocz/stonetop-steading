@@ -1,5 +1,3 @@
-using System.Security.Cryptography;
-
 namespace Api.Domain;
 
 // The region map. One per steading; uploading again replaces it.
@@ -34,36 +32,9 @@ public sealed class MapImage
     // Throws ArgumentException unless the bytes are a PNG, JPEG or WebP within the size limit.
     public void Replace(byte[] data, DateTimeOffset uploadedAt)
     {
-        if (data.Length > MaxBytes)
-        {
-            throw new ArgumentException($"The map can be at most {MaxBytes / (1024 * 1024)} MB.", nameof(data));
-        }
-
-        ContentType = DetectContentType(data)
-            ?? throw new ArgumentException("The map must be a PNG, JPEG or WebP image.", nameof(data));
+        ContentType = ImageFormat.Validate(data, MaxBytes, "map");
         Data = data;
-        Version = Convert.ToHexStringLower(SHA256.HashData(data))[..16];
+        Version = ImageFormat.Version(data);
         UploadedAt = uploadedAt;
-    }
-
-    // Decided by the file's signature, never by its name or the request's Content-Type.
-    public static string? DetectContentType(ReadOnlySpan<byte> data)
-    {
-        if (data.StartsWith((ReadOnlySpan<byte>)[0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]))
-        {
-            return "image/png";
-        }
-
-        if (data.StartsWith((ReadOnlySpan<byte>)[0xFF, 0xD8, 0xFF]))
-        {
-            return "image/jpeg";
-        }
-
-        if (data.Length >= 12 && data[..4].SequenceEqual("RIFF"u8) && data[8..12].SequenceEqual("WEBP"u8))
-        {
-            return "image/webp";
-        }
-
-        return null;
     }
 }

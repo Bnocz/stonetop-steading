@@ -1,6 +1,6 @@
 using Api.Domain;
+using Api.Images;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Net.Http.Headers;
 
 namespace Api.Maps;
 
@@ -51,15 +51,10 @@ public static class MapEndpoints
         [FromServices] MapService service,
         CancellationToken cancellationToken)
     {
-        if (request.ContentLength > MapImage.MaxBytes)
+        var data = await ImageHttp.ReadBodyAsync(request, MapImage.MaxBytes, cancellationToken);
+        if (data is null)
         {
-            return TooLarge();
-        }
-
-        var data = await ReadUpToAsync(request.Body, MapImage.MaxBytes + 1, cancellationToken);
-        if (data.Length > MapImage.MaxBytes)
-        {
-            return TooLarge();
+            return ImageHttp.TooLarge(MapImage.MaxBytes, "map");
         }
 
         try
@@ -184,36 +179,8 @@ public static class MapEndpoints
         CancellationToken cancellationToken) =>
         await service.DeleteSessionAsync(id, cancellationToken) ? Results.NoContent() : Results.NotFound();
 
-    // Shared with the player view: browsers revalidate with the ETag instead of keeping a stale map.
-    internal static IResult ImageResult(HttpContext context, MapImage image)
-    {
-        context.Response.Headers.CacheControl = "private, no-cache";
-        context.Response.Headers.XContentTypeOptions = "nosniff";
-        return Results.Bytes(
-            image.Data,
-            image.ContentType,
-            lastModified: image.UploadedAt,
-            entityTag: new EntityTagHeaderValue($"\"{image.Version}\""));
-    }
-
-    private static async Task<byte[]> ReadUpToAsync(Stream body, int limit, CancellationToken cancellationToken)
-    {
-        using var buffer = new MemoryStream();
-        var chunk = new byte[81920];
-        int read;
-        while (buffer.Length < limit
-            && (read = await body.ReadAsync(chunk.AsMemory(0, (int)Math.Min(chunk.Length, limit - buffer.Length)), cancellationToken)) > 0)
-        {
-            buffer.Write(chunk, 0, read);
-        }
-
-        return buffer.ToArray();
-    }
-
-    private static IResult TooLarge() =>
-        Results.Problem(
-            detail: $"The map can be at most {MapImage.MaxBytes / (1024 * 1024)} MB.",
-            statusCode: StatusCodes.Status413PayloadTooLarge);
+    private static IResult ImageResult(HttpContext context, MapImage image) =>
+        ImageHttp.Serve(context, image.Data, image.ContentType, image.Version, image.UploadedAt);
 
     private static IResult BadRequest(ArgumentException exception) =>
         Results.Problem(detail: StripParameterName(exception), statusCode: StatusCodes.Status400BadRequest);

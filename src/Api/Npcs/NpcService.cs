@@ -9,8 +9,93 @@ public sealed class NpcService(SteadingDbContext db, TimeProvider timeProvider)
     public async Task<IReadOnlyList<NpcResponse>> ListForGmAsync(CancellationToken cancellationToken = default)
     {
         var npcs = await db.Npcs.AsNoTracking().ToListAsync(cancellationToken);
-        return SortByName(npcs).Select(NpcResponse.From).ToList();
+        var portraits = await db.NpcPortraits.ToDictionaryAsync(p => p.NpcId, p => p.Version, cancellationToken);
+        return SortByName(npcs).Select(n => NpcResponse.From(n, portraits.GetValueOrDefault(n.Id))).ToList();
     }
+
+    // Returns null for an unknown token. Only visible NPCs' portraits are listed.
+    public async Task<IReadOnlyList<PlayerPortraitResponse>?> ListPlayerPortraitsAsync(
+        string shareToken,
+        CancellationToken cancellationToken = default)
+    {
+        var steadingId = await FindSteadingAsync(shareToken, cancellationToken);
+        if (steadingId is null)
+        {
+            return null;
+        }
+
+        return await db.NpcPortraits
+            .Where(p => db.Npcs.Any(n => n.Id == p.NpcId && n.SteadingId == steadingId && !n.GmOnly && n.ArchivedAt == null))
+            .Select(p => new PlayerPortraitResponse(p.NpcId, p.Version))
+            .ToListAsync(cancellationToken);
+    }
+
+    // Returns null unless the token is current and the NPC is visible to players.
+    public async Task<NpcPortrait?> GetPlayerPortraitAsync(
+        string shareToken,
+        Guid npcId,
+        CancellationToken cancellationToken = default)
+    {
+        var steadingId = await FindSteadingAsync(shareToken, cancellationToken);
+        if (steadingId is null)
+        {
+            return null;
+        }
+
+        return await db.NpcPortraits
+            .AsNoTracking()
+            .Where(p => p.NpcId == npcId)
+            .Where(p => db.Npcs.Any(n => n.Id == p.NpcId && n.SteadingId == steadingId && !n.GmOnly && n.ArchivedAt == null))
+            .SingleOrDefaultAsync(cancellationToken);
+    }
+
+    public Task<NpcPortrait?> GetPortraitAsync(Guid npcId, CancellationToken cancellationToken = default) =>
+        db.NpcPortraits.AsNoTracking().SingleOrDefaultAsync(p => p.NpcId == npcId, cancellationToken);
+
+    // Returns null for an unknown NPC; throws ArgumentException for files that aren't a small PNG, JPEG or WebP.
+    public async Task<PortraitResponse?> UploadPortraitAsync(
+        Guid npcId,
+        byte[] data,
+        CancellationToken cancellationToken = default)
+    {
+        if (!await db.Npcs.AnyAsync(n => n.Id == npcId, cancellationToken))
+        {
+            return null;
+        }
+
+        var now = timeProvider.GetUtcNow();
+        var portrait = await db.NpcPortraits.SingleOrDefaultAsync(p => p.NpcId == npcId, cancellationToken);
+        if (portrait is null)
+        {
+            portrait = NpcPortrait.Create(npcId, data, now);
+            db.NpcPortraits.Add(portrait);
+        }
+        else
+        {
+            portrait.Replace(data, now);
+        }
+
+        await db.SaveChangesAsync(cancellationToken);
+        return new PortraitResponse(portrait.Version);
+    }
+
+    // Returns false for an unknown NPC. Removing a portrait that isn't there is fine.
+    public async Task<bool> RemovePortraitAsync(Guid npcId, CancellationToken cancellationToken = default)
+    {
+        if (!await db.Npcs.AnyAsync(n => n.Id == npcId, cancellationToken))
+        {
+            return false;
+        }
+
+        await db.NpcPortraits.Where(p => p.NpcId == npcId).ExecuteDeleteAsync(cancellationToken);
+        return true;
+    }
+
+    private Task<Guid?> FindSteadingAsync(string shareToken, CancellationToken cancellationToken) =>
+        db.Steadings
+            .Where(s => s.ShareToken == shareToken)
+            .Select(s => (Guid?)s.Id)
+            .SingleOrDefaultAsync(cancellationToken);
 
     // Returns null for an unknown token. The filter runs in the database query, so hidden
     // and archived NPCs never leave the server.
@@ -42,7 +127,7 @@ public sealed class NpcService(SteadingDbContext db, TimeProvider timeProvider)
         var npc = Npc.Create(steadingId, request.Name, request.Description, request.GmNotes, request.GmOnly ?? false);
         db.Npcs.Add(npc);
         await db.SaveChangesAsync(cancellationToken);
-        return NpcResponse.From(npc);
+        return NpcResponse.From(npc, portraitVersion: null);
     }
 
     // Returns null for an unknown NPC; throws ArgumentException for invalid fields.
@@ -68,7 +153,11 @@ public sealed class NpcService(SteadingDbContext db, TimeProvider timeProvider)
 
         change(npc);
         await db.SaveChangesAsync(cancellationToken);
-        return NpcResponse.From(npc);
+        var portraitVersion = await db.NpcPortraits
+            .Where(p => p.NpcId == id)
+            .Select(p => p.Version)
+            .SingleOrDefaultAsync(cancellationToken);
+        return NpcResponse.From(npc, portraitVersion);
     }
 
     // Sorted in memory so the order doesn't depend on the database's collation.
