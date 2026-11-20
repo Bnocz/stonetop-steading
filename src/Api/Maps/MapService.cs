@@ -39,6 +39,35 @@ public sealed class MapService(SteadingDbContext db, TimeProvider timeProvider)
         return MapImageResponse.From(image);
     }
 
+    // Returns null for an unknown share token.
+    public Task<Guid?> FindSteadingByShareTokenAsync(string shareToken, CancellationToken cancellationToken = default) =>
+        db.Steadings
+            .Where(s => s.ShareToken == shareToken)
+            .Select(s => (Guid?)s.Id)
+            .SingleOrDefaultAsync(cancellationToken);
+
+    public async Task<MapImageResponse?> GetImageInfoAsync(Guid steadingId, CancellationToken cancellationToken = default) =>
+        await db.MapImages
+            .Where(i => i.SteadingId == steadingId)
+            .Select(i => new MapImageResponse(i.Version, i.ContentType))
+            .SingleOrDefaultAsync(cancellationToken);
+
+    public Task<MapImage?> GetImageAsync(Guid steadingId, CancellationToken cancellationToken = default) =>
+        db.MapImages.AsNoTracking().SingleOrDefaultAsync(i => i.SteadingId == steadingId, cancellationToken);
+
+    // Hidden sessions are filtered in the query, so they never leave the server.
+    public async Task<IReadOnlyList<PlayerSessionResponse>> ListPlayerSessionsAsync(
+        Guid steadingId,
+        CancellationToken cancellationToken = default)
+    {
+        var sessions = await db.PlaySessions
+            .AsNoTracking()
+            .Where(s => s.SteadingId == steadingId && !s.GmOnly)
+            .OrderBy(s => s.Number)
+            .ToListAsync(cancellationToken);
+        return sessions.Select(PlayerSessionResponse.From).ToList();
+    }
+
     public async Task<IReadOnlyList<SessionResponse>> ListSessionsAsync(CancellationToken cancellationToken = default)
     {
         var sessions = await db.PlaySessions.AsNoTracking().OrderBy(s => s.Number).ToListAsync(cancellationToken);

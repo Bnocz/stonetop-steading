@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { formatStatValue } from '../api/steading.ts'
 import { fetchPlayerLog, fetchPlayerSteading } from '../api/view.ts'
 import LogList from './LogList.tsx'
+import PlayerMap from './PlayerMap.tsx'
 import PlayerNpcList from './PlayerNpcList.tsx'
 import Tabs from './Tabs.tsx'
 
@@ -62,6 +63,7 @@ function PlayerView({ token }: { token: string }) {
             ),
           },
           { label: 'NPCs', content: <PlayerNpcList token={token} /> },
+          { label: 'Map', content: <PlayerMap token={token} /> },
         ]}
       />
     </main>
