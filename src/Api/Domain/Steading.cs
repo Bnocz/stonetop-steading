@@ -64,6 +64,9 @@ public sealed class Steading
     // Old links stop working as soon as this is saved.
     public void ReplaceShareToken() => ShareToken = NewShareToken();
 
+    // A link made of words, e.g. "ember-moss-lantern-crow". Old links stop working as soon as this is saved.
+    public void UseReadableShareToken() => ShareToken = ShareLinkWords.NewLink();
+
     private static string NewShareToken() => Base64Url.EncodeToString(RandomNumberGenerator.GetBytes(32));
 
     // Returns the log entry the caller must save with this change, or null if the value didn't change.

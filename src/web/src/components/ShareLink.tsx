@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
-import { fetchShareLink, replaceShareLink } from '../api/steading.ts'
+import { fetchShareLink, makeReadableShareLink, replaceShareLink } from '../api/steading.ts'
 
 function ShareLink() {
   const queryClient = useQueryClient()
@@ -8,6 +8,14 @@ function ShareLink() {
   const shareLink = useQuery({ queryKey: ['share-link'], queryFn: fetchShareLink })
   const replace = useMutation({
     mutationFn: replaceShareLink,
+    onSuccess: (updated) => {
+      queryClient.setQueryData(['share-link'], updated)
+      setCopyStatus('')
+    },
+  })
+
+  const readable = useMutation({
+    mutationFn: makeReadableShareLink,
     onSuccess: (updated) => {
       queryClient.setQueryData(['share-link'], updated)
       setCopyStatus('')
@@ -35,6 +43,15 @@ function ShareLink() {
     if (confirmed) replace.mutate()
   }
 
+  function confirmReadable() {
+    const confirmed = window.confirm(
+      'Make a new readable link from four random words? The current link will stop working, and players will need the new one.',
+    )
+    if (confirmed) readable.mutate()
+  }
+
+  const busy = replace.isPending || readable.isPending
+
   return (
     <section>
       <h2>Player link</h2>
@@ -49,11 +66,15 @@ function ShareLink() {
         />
       </p>
       {replace.isError && <p role="alert">{replace.error.message}</p>}
+      {readable.isError && <p role="alert">{readable.error.message}</p>}
       <button type="button" onClick={() => void copy()}>
         Copy
       </button>{' '}
-      <button type="button" disabled={replace.isPending} onClick={confirmReplace}>
+      <button type="button" disabled={busy} onClick={confirmReplace}>
         Replace link
+      </button>{' '}
+      <button type="button" disabled={busy} onClick={confirmReadable}>
+        Make a readable link
       </button>{' '}
       <span>{copyStatus}</span>
     </section>
