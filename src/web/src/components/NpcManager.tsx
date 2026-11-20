@@ -8,8 +8,10 @@ import {
   updateNpc,
   type Npc,
   type NpcFields,
+  gmPortraitUrl,
 } from '../api/npcs.ts'
 import NpcForm from './NpcForm.tsx'
+import NpcPortraitEditor from './NpcPortraitEditor.tsx'
 
 // null: no form open; 'new': adding; otherwise the id of the NPC being edited.
 type Editing = null | 'new' | string
@@ -63,7 +65,10 @@ function NpcManager() {
       <h2>NPCs</h2>
       {actionError && <p role="alert">{actionError.message}</p>}
       {editing === 'new' ? (
-        form('New NPC', null)
+        <>
+          {form('New NPC', null)}
+          <p className="hint">Save the NPC first, then edit it to add a portrait.</p>
+        </>
       ) : (
         <button type="button" className="primary" onClick={() => open('new')}>
           Add NPC
@@ -72,7 +77,10 @@ function NpcManager() {
       {active.length === 0 && <p>No NPCs yet.</p>}
       {active.map((npc) =>
         editing === npc.id ? (
-          <div key={npc.id}>{form(`Edit ${npc.name}`, npc.id, fieldsOf(npc))}</div>
+          <div key={npc.id}>
+            {form(`Edit ${npc.name}`, npc.id, fieldsOf(npc))}
+            <NpcPortraitEditor npc={npc} />
+          </div>
         ) : (
           <NpcCard key={npc.id} npc={npc}>
             <button type="button" aria-label={`Edit ${npc.name}`} onClick={() => open(npc.id)}>
@@ -123,6 +131,9 @@ function NpcCard({ npc, children }: { npc: Npc; children: ReactNode }) {
   const headingId = useId()
   return (
     <article className="npc" aria-labelledby={headingId}>
+      {npc.portraitVersion && (
+        <img className="portrait" src={gmPortraitUrl(npc.id, npc.portraitVersion)} alt={`Portrait of ${npc.name}`} />
+      )}
       <div className="npc-heading">
         <h3 id={headingId}>{npc.name}</h3>
         {npc.gmOnly && <p className="seal">Hidden from players</p>}

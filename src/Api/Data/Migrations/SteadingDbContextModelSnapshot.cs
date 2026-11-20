@@ -123,6 +123,40 @@ namespace Api.Data.Migrations
                     b.ToTable("Npcs");
                 });
 
+            modelBuilder.Entity("Api.Domain.NpcPortrait", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<byte[]>("Data")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
+                    b.Property<Guid>("NpcId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("UploadedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Version")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NpcId")
+                        .IsUnique();
+
+                    b.ToTable("NpcPortraits");
+                });
+
             modelBuilder.Entity("Api.Domain.PlaySession", b =>
                 {
                     b.Property<Guid>("Id")
@@ -266,6 +300,15 @@ namespace Api.Data.Migrations
                     b.HasOne("Api.Domain.Steading", null)
                         .WithMany()
                         .HasForeignKey("SteadingId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Api.Domain.NpcPortrait", b =>
+                {
+                    b.HasOne("Api.Domain.Npc", null)
+                        .WithMany()
+                        .HasForeignKey("NpcId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

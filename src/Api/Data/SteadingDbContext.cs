@@ -15,6 +15,8 @@ public sealed class SteadingDbContext(DbContextOptions<SteadingDbContext> option
 
     public DbSet<MapImage> MapImages => Set<MapImage>();
 
+    public DbSet<NpcPortrait> NpcPortraits => Set<NpcPortrait>();
+
     public DbSet<PlaySession> PlaySessions => Set<PlaySession>();
 
     public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
@@ -54,6 +56,14 @@ public sealed class SteadingDbContext(DbContextOptions<SteadingDbContext> option
             npc.Property(n => n.GmNotes).HasMaxLength(Npc.GmNotesMaxLength);
             npc.HasOne<Steading>().WithMany().HasForeignKey(n => n.SteadingId);
             npc.HasIndex(n => n.SteadingId);
+        });
+
+        modelBuilder.Entity<NpcPortrait>(portrait =>
+        {
+            portrait.Property(p => p.ContentType).HasMaxLength(20);
+            portrait.Property(p => p.Version).HasMaxLength(16);
+            portrait.HasOne<Npc>().WithMany().HasForeignKey(p => p.NpcId).OnDelete(DeleteBehavior.Cascade);
+            portrait.HasIndex(p => p.NpcId).IsUnique();
         });
 
         modelBuilder.Entity<MapImage>(image =>

@@ -331,6 +331,8 @@ table {
 }
 
 .secret {
+  /* Its own block context, so the box sits beside a floated portrait instead of under it. */
+  display: flow-root;
   margin: 0.5rem 0;
   padding: 0.5rem 0.75rem 0.5rem 0.9rem;
   font-size: 1rem;
@@ -367,6 +369,46 @@ table {
 
 .npc-form textarea {
   width: 100%;
+}
+
+/* NPC portraits: a framed square beside the entry; the stored picture keeps its shape. */
+.npc::after {
+  content: '';
+  display: block;
+  clear: both;
+}
+
+.portrait {
+  float: left;
+  width: 192px;
+  height: 192px;
+  margin: 0.25rem 1rem 0.5rem 0;
+  object-fit: cover;
+  background: var(--field);
+  border: 1.5px solid var(--rule);
+  border-radius: 3px;
+  box-shadow: 0 0 0 3px var(--leaf), 0 0 0 4px var(--rule);
+}
+
+.portrait-editor {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: flex-start;
+  max-width: 32rem;
+  margin: 0 0 1rem;
+  font-size: 0.95rem;
+}
+
+.portrait-editor .portrait {
+  float: none;
+  margin: 0;
+}
+
+.hint {
+  font-size: 0.95rem;
+  font-style: italic;
+  color: var(--ink-soft);
 }
 
 /* ---------- Map ---------- */
@@ -537,6 +579,12 @@ input[type='file']::file-selector-button {
   .stat-block th,
   .stat-block td {
     padding: 0.45rem 0.3rem;
+  }
+
+  .portrait {
+    width: 120px;
+    height: 120px;
+    margin-right: 0.75rem;
   }
 
   /* The GM sheet's five columns don't fit; the label is the least needed. */

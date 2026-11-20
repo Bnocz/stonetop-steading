@@ -5,6 +5,8 @@ export interface Npc {
   gmNotes: string
   gmOnly: boolean
   archived: boolean
+  // Null (or missing) when the NPC has no portrait.
+  portraitVersion?: string | null
 }
 
 export interface NpcFields {
@@ -65,6 +67,41 @@ export function archiveNpc(id: string): Promise<Npc> {
 
 export function restoreNpc(id: string): Promise<Npc> {
   return sendNpc(`/api/gm/npcs/${id}/restore`, { method: 'POST' })
+}
+
+// The version changes with the file, so a replaced portrait is never served from cache.
+export function gmPortraitUrl(id: string, version: string): string {
+  return `/api/gm/npcs/${id}/portrait?v=${encodeURIComponent(version)}`
+}
+
+export async function uploadPortrait(id: string, picture: Blob): Promise<{ version: string }> {
+  const response = await fetch(`/api/gm/npcs/${id}/portrait`, {
+    method: 'PUT',
+    headers: { 'Content-Type': picture.type || 'application/octet-stream' },
+    body: picture,
+  })
+  if (!response.ok) throw new Error(await readErrorDetail(response))
+  return (await response.json()) as { version: string }
+}
+
+export async function removePortrait(id: string): Promise<void> {
+  const response = await fetch(`/api/gm/npcs/${id}/portrait`, { method: 'DELETE' })
+  if (!response.ok) throw new Error(await readErrorDetail(response))
+}
+
+export interface PlayerPortrait {
+  npcId: string
+  version: string
+}
+
+export async function fetchPlayerPortraits(token: string): Promise<PlayerPortrait[]> {
+  const response = await fetch(`/api/view/${token}/npc-portraits`)
+  if (!response.ok) throw new Error(`Loading the portraits failed with HTTP ${response.status}`)
+  return (await response.json()) as PlayerPortrait[]
+}
+
+export function playerPortraitUrl(token: string, id: string, version: string): string {
+  return `/api/view/${token}/npcs/${id}/portrait?v=${encodeURIComponent(version)}`
 }
 
 export async function fetchPlayerNpcs(token: string): Promise<PlayerNpc[]> {
