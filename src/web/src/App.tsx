@@ -12,7 +12,7 @@ function App() {
   return (
     <main>
       <h1>Stonetop Steading</h1>
-      <p>API: {status}</p>
+      <p className="api-status">API: {status}</p>
       <GmArea />
     </main>
   )

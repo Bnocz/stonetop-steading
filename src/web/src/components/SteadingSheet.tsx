@@ -26,13 +26,19 @@ function SteadingSheet() {
       <h2>{name}</h2>
       {edit.isError && <p role="alert">{edit.error.message}</p>}
       <div className="table-scroll">
-        <table>
+        <table className="stat-block gm">
           <thead>
             <tr>
               <th scope="col">Stat</th>
-              <th scope="col">Value</th>
-              <th scope="col">Effective</th>
-              <th scope="col">Label</th>
+              <th scope="col" className="num">
+                Value
+              </th>
+              <th scope="col" className="num">
+                Effective
+              </th>
+              <th scope="col" className="label">
+                Label
+              </th>
               <th scope="col">Change</th>
             </tr>
           </thead>
@@ -48,7 +54,7 @@ function SteadingSheet() {
           </tbody>
         </table>
       </div>
-      <p>Debilities: {debilities.length > 0 ? debilities.join(', ') : 'none'}</p>
+      <p className="debilities">Debilities: {debilities.length > 0 ? debilities.join(', ') : 'none'}</p>
     </section>
   )
 }

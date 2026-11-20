@@ -12,12 +12,15 @@ function StatRow({ stat, disabled, onChange }: StatRowProps) {
   return (
     <tr>
       <th scope="row">{stat.stat}</th>
-      <td>{formatStatValue(stat.stat, stat.raw)}</td>
-      <td>{formatStatValue(stat.stat, stat.effective)}</td>
-      <td>{stat.label}</td>
-      <td>
+      <td className="num">{formatStatValue(stat.stat, stat.raw)}</td>
+      <td className={stat.effective === stat.raw ? 'num' : 'num changed'}>
+        {formatStatValue(stat.stat, stat.effective)}
+      </td>
+      <td className="label">{stat.label}</td>
+      <td className="actions">
         <button
           type="button"
+          className="small"
           aria-label={`Lower ${stat.stat}`}
           disabled={disabled || stat.raw <= stat.min}
           onClick={() => onChange(stat.raw - 1)}
@@ -26,6 +29,7 @@ function StatRow({ stat, disabled, onChange }: StatRowProps) {
         </button>{' '}
         <button
           type="button"
+          className="small"
           aria-label={`Raise ${stat.stat}`}
           disabled={disabled || atMax}
           onClick={() => onChange(stat.raw + 1)}

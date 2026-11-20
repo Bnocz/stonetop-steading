@@ -62,7 +62,7 @@ function NpcForm({
         Hidden from players
       </label>
       <p>
-        <button type="submit" disabled={saving}>
+        <button type="submit" className="primary" disabled={saving}>
           Save
         </button>{' '}
         <button type="button" onClick={onCancel}>

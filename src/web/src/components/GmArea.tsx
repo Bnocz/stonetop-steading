@@ -26,15 +26,17 @@ function GmArea() {
 
   return (
     <section>
-      <p>Signed in as {me.data.username}</p>
+      <div className="signed-in">
+        <p>Signed in as {me.data.username}</p>
+        <button
+          type="button"
+          disabled={signOut.isPending}
+          onClick={() => signOut.mutate()}
+        >
+          Sign out
+        </button>
+      </div>
       {signOut.isError && <p role="alert">{signOut.error.message}</p>}
-      <button
-        type="button"
-        disabled={signOut.isPending}
-        onClick={() => signOut.mutate()}
-      >
-        Sign out
-      </button>
       <Tabs
         label="GM sections"
         tabs={[
